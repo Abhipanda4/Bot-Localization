@@ -1,4 +1,4 @@
-function [mapUpdate, robPoseMapFrame, laserEndPntsMapFrame] = inv_sensor_model(map, scan, robPose, gridSize, offset, probOcc, probFree)
+function [mapUpdate, laserEndPntsMapFrame] = inv_sensor_model(map, scan, robPose, gridSize, offset, probOcc, probFree)
 % Compute the log odds values that should be added to the map based on the inverse sensor model
 % of a laser range finder.
 
@@ -19,6 +19,8 @@ function [mapUpdate, robPoseMapFrame, laserEndPntsMapFrame] = inv_sensor_model(m
 
 % Initialize mapUpdate.
 mapUpdate = zeros(size(map));
+X_map = size(map)(1,2);
+Y_map = size(map)(1,1);
 
 % Robot pose as a homogeneous transformation matrix.
 robTrans = v2t(robPose);
@@ -35,7 +37,6 @@ laserEndPnts = robTrans * laserEndPnts;
 % TODO: compute laserEndPntsMapFrame from laserEndPnts. Use your world_to_map_coordinates implementation.
 laserEndPntsMapFrame = world_to_map_coordinates(laserEndPnts(1:2,:), gridSize, offset);
 laserEndPntsMapFrame(3,:) = laserEndPnts(3,:);
-
 
 % freeCells are the map coordinates of the cells through which the laser beams pass.
 freeCells = [];
@@ -54,23 +55,22 @@ for sc=1:columns(laserEndPntsMapFrame)
 	freeCells = [freeCells, [x;y]];
 end
 
-
 %TODO: update the log odds values in mapUpdate for each free cell according to probFree.
-
+free_add = prob_to_log_odds(probFree);
 for i=1:size(freeCells, 2)
 		% get x-y coordinates of the free cells
 		x_f = freeCells(1,i);
 		y_f = freeCells(2,i);
-		mapUpdate(x_f, y_f) = prob_to_log_odds(probFree);
+		mapUpdate(x_f, y_f) = free_add;
 end
 
 
-%TODO: update the log odds values in mapUpdate for each laser endpoint according to probOcc.
+% update the log odds values in mapUpdate for each laser endpoint according to probOcc.
+occupied_add = prob_to_log_odds(probOcc);
 for i=1:size(laserEndPntsMapFrame,2)
 	x_f = laserEndPntsMapFrame(1,i);
 	y_f = laserEndPntsMapFrame(2,i);
-	mapUpdate(x_f, y_f) = prob_to_log_odds(probOcc);
+	mapUpdate(x_f, y_f) = occupied_add;
 end
-
 
 end

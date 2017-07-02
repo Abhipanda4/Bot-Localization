@@ -58,9 +58,9 @@ function data = read_data(filename)
                 sensor = struct;
             endif
             first = 0;
-            odom.r1 = str2double(arr{2});
-            odom.t  = str2double(arr{3});
-            odom.r2 = str2double(arr{4});
+            odom.x = str2double(arr{2});
+            odom.y  = str2double(arr{3});
+            odom.theta = str2double(arr{4});
         elseif(strcmp(type, 'SENSOR') == 1)
             reading = struct;
             reading.id      = str2double(arr{2});

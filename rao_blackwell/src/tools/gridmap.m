@@ -1,17 +1,13 @@
-function particles = gridmap(particles, scan, gridSize, offset, probOcc, probFree, logOddsPrior)
-for(t=1 : size(particles,1))
-	% Robot pose at the given step
-	robPose = [particle(i).pose];
+function [particles, laserEndPntsMapFrame] = gridmap(particles, sc, gridSize, mapBox, offset, initial_state, probOcc, probFree)
+	for i=1 : length(particles)
+		% Robot pose at the given step
+		robPose = particles(i).pose;
 
-	% Compute the mapUpdate, which contains the log odds values to add to the map.
-	[mapUpdate, robPoseMapFrame, laserEndPntsMapFrame] = inv_sensor_model(particle(i).map, sc, robPose, gridSize, offset, probOcc, probFree);
-
-	mapUpdate -= logOddsPrior * ones(size(particles(i).map));
-	% Update the occupancy values of the affected cells.
-	particles(i).map += mapUpdate;
-
-	% Plot current map and robot trajectory so far.
-	plot(particles(i).map, mapBox, robPoseMapFrame, poses, laserEndPntsMapFrame, gridSize, offset, t);
-
-end
+		% Compute the mapUpdate, which contains the log odds values to add to the map.
+		[mapUpdate, laserEndPntsMapFrame] = inv_sensor_model(particles(i).map, sc, robPose, gridSize, offset, probOcc, probFree);
+		mapUpdate -= initial_state;
+		
+		% Update the occupancy values of the affected cells.
+		particles(i).map += mapUpdate;
+	end
 end
